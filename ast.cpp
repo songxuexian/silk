@@ -61,8 +61,6 @@ public:
     FunctionAST(std::unique_ptr<PrototypeAST> Proto, std::unique_ptr<ExprAST> Body) : Proto(std::move(Proto)), Body(std::move(Body)) {}
 };
 
-
-
 std::unique_ptr<ExprAST> LogError(const char *str)
 {
     fprintf(stderr, "LogError: %s\n", str);
@@ -73,4 +71,25 @@ std::unique_ptr<PrototypeAST> LogErrorP(const char *str)
 {
     LogError(str);
     return nullptr;
+}
+
+// numberexpr ::= number
+static std::unique_ptr<ExprAST> ParseNumberExpr()
+{
+    auto Result = std::make_unique<NumberExprAST>(NumVal);
+    getNextToken();
+    return std::move(Result);
+}
+
+/// parenexpr ::= '(' expression ')'
+static std::unique_ptr<ExprAST> ParseParenExpr()
+{
+    getNextToken();
+    auto V = ParseExpressions();
+    if (!V)
+        return nullptr;
+    if (CurTok != ')')
+        return LogError("expected ')'");
+    getNextToken();
+    return V;
 }
